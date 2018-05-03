@@ -1,0 +1,4 @@
+name: RealisticSprinting
+version: @version@
+author: Ninjoh
+main: com.github.martijn_heil.realisticsprinting.RealisticSprinting
