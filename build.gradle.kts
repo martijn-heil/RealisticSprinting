@@ -62,7 +62,6 @@ idea {
 
 dependencies {
     compileOnly("org.bukkit:bukkit:1.12.2-R0.1-SNAPSHOT") { isChanging = true }
-    compileOnly("org.spigotmc:spigot:1.12.2-R0.1-SNAPSHOT") { isChanging = true }
     compileOnly(fileTree("lib") { include("*.jar") })
     shadow(kotlin("stdlib"))
 }

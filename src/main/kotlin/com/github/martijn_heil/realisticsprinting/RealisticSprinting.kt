@@ -19,6 +19,9 @@
 
 package com.github.martijn_heil.realisticsprinting
 
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.entity.FoodLevelChangeEvent
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
 
@@ -27,15 +30,18 @@ class RealisticSprinting : JavaPlugin() {
     private val decreasePerSecondBaseValue = 2
     private val increasePerSecondBaseValue = 1
     private val playerMap = HashMap<UUID, Pair<Int /* increase */, Int /* decrease */>>()
+    private var changingFood = false
 
     override fun onEnable() {
         if(server.scheduler.scheduleSyncRepeatingTask(this, {
             server.onlinePlayers.forEach {
                 if(it.isSprinting && it.foodLevel > 0) {
+                    changingFood = true
                     val decrease = playerMap[it.uniqueId]?.second ?: decreasePerSecondBaseValue
                     var newLevel = it.foodLevel - decrease
                     if(newLevel < 0) newLevel = 0 // prevent underflow
                     it.foodLevel = newLevel
+                    changingFood = false
                 }
             }
         }, 0, 20) == -1) { logger.severe("Could not schedule first task."); this.isEnabled = false; return }
@@ -44,12 +50,21 @@ class RealisticSprinting : JavaPlugin() {
         if(server.scheduler.scheduleSyncRepeatingTask(this, {
             server.onlinePlayers.forEach {
                 if(!it.isSprinting && it.foodLevel < 20) {
+                    changingFood = true
                     val increase = playerMap[it.uniqueId]?.first ?: increasePerSecondBaseValue
                     var newLevel = it.foodLevel + increase
                     if(newLevel > 20) newLevel = 20 // prevent overflow
                     it.foodLevel = newLevel
+                    changingFood = false
                 }
             }
         }, 0, 20) == -1) { logger.severe("Could not schedule second task."); this.isEnabled = false; return }
+
+        server.pluginManager.registerEvents(object : Listener {
+            @EventHandler
+            fun onFoodLevelChange(e: FoodLevelChangeEvent) {
+                e.isCancelled = !changingFood
+            }
+        }, this)
     }
 }
