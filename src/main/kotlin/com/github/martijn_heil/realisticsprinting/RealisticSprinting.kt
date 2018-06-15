@@ -29,21 +29,23 @@ class RealisticSprinting : JavaPlugin() {
     private val playerMap = HashMap<UUID, Pair<Int /* increase */, Int /* decrease */>>()
 
     override fun onEnable() {
-        if(server.scheduler.scheduleSyncRepeatingTask(this, {
-            server.onlinePlayers.forEach {
-                if(!it.isSprinting && it.foodLevel < 20) {
-                    val increase = playerMap[it.uniqueId]?.first ?: increasePerSecondBaseValue
-                    var newLevel = it.foodLevel + increase
-                    if(newLevel > 20) newLevel = 20 // prevent overflow
-                    it.foodLevel = newLevel
-                } else if(it.isSprinting && it.foodLevel > 0) {
-                val decrease = playerMap[it.uniqueId]?.second ?: decreasePerSecondBaseValue
-                var newLevel = it.foodLevel - decrease
-                if(newLevel < 0) newLevel = 0 // prevent underflow
-                it.foodLevel = newLevel
-            }
-            }
-        }, 0, 20) == -1) { logger.severe("Could not schedule task."); this.isEnabled = false; return }
+        if (server.scheduler.scheduleSyncRepeatingTask(this, {
+                    server.onlinePlayers.forEach {
+                        if (!it.isSprinting && it.foodLevel < 20) {
+                            val increase = playerMap[it.uniqueId]?.first ?: increasePerSecondBaseValue
+                            var newLevel = it.foodLevel + increase
+                            if (newLevel > 20) newLevel = 20 // prevent overflow
+                            it.foodLevel = newLevel
+                        } else if (it.isSprinting && it.foodLevel > 0) {
+                            val decrease = playerMap[it.uniqueId]?.second ?: decreasePerSecondBaseValue
+                            var newLevel = it.foodLevel - decrease
+                            if (newLevel < 0) newLevel = 0 // prevent underflow
+                            it.foodLevel = newLevel
+                        }
+                    }
+                }, 0, 20) == -1) {
+            logger.severe("Could not schedule task."); this.isEnabled = false; return
+        }
     }
 
     override fun onDisable() {
